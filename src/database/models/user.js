@@ -45,5 +45,5 @@ const schema = mongoose.Schema({
 }, {
 	timestamps: true,
 });
-schema.plugin(beautifyUnique);
+// schema.plugin(beautifyUnique);
 module.exports = mongoose.model('User', schema);

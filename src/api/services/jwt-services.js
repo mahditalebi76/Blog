@@ -6,7 +6,7 @@ const User = require('../../database/models/user')
 
 module.exports = {
 
-    makeTokens: async (user) => {
+    makeTokens: async(user) => {
 
         const jwtSecret = process.env.JWTSECRET;
         //create jwt
@@ -18,7 +18,7 @@ module.exports = {
         };
 
         accessToken = jwt.sign(jwtpayload, jwtSecret, {
-            expiresIn: '15s',
+            expiresIn: '15d',
         });
 
         refreshToken = jwt.sign({
@@ -33,12 +33,13 @@ module.exports = {
         return returnData
     },
 
-    verifyRefreshToken: async (refreshToken, id) => {
+    verifyRefreshToken: async(refreshToken, id) => {
+
         const jwtSecret = process.env.JWTSECRET;
         return new Promise((resolve, reject) => {
-            jwt.verify(refreshToken, jwtSecret, async (err, decoded) => {
+            jwt.verify(refreshToken, jwtSecret, async(err, decoded) => {
                 if (err) {
-                    return reject(createError.Unauthorized())
+                    return reject(createError.Unauthorized('incorrect refresh token'))
                 }
                 if (id === decoded.id) {
                     user = await User.findOne({
@@ -46,10 +47,10 @@ module.exports = {
                         refreshToken: refreshToken,
                     });
                     if (!user) {
-                        return reject(createError.Unauthorized())
+                        return reject(createError.Unauthorized('incorrect userId or refresh token'))
                     }
                 } else {
-                    return reject(createError.Unauthorized())
+                    return reject(createError.Unauthorized('incorrect userId'))
                 }
                 return resolve(true)
 

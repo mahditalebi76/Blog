@@ -1,18 +1,19 @@
 const User = require('../../../database/models/user')
-const send = require('../../middlewares/send');
 const createError = require('http-errors');
 const jwt = require('jsonwebtoken');
+const UserService = require('../../services/user-services');
 
-const jwtHelper = require('../../helpers/jwtHelper');
+const jwtHelper = require('../../services/jwt-services');
 
-module.exports = async (req, res, next) => {
-    const jwtSecret = process.env.JWTSECRET;
+module.exports = async(req, res, next) => {
+
     // get parameteres from request
     var {
         refreshToken,
         id
     } = req.body;
 
+    //call the service
     try {
         valid = await jwtHelper.verifyRefreshToken(refreshToken, id)
     } catch (error) {
@@ -23,14 +24,8 @@ module.exports = async (req, res, next) => {
         accessToken,
         refreshToken
     } = await jwtHelper.makeTokens(user);
+    user = await UserService.updateUserRefreshToken(id, refreshToken)
 
-    user = await User.findOneAndUpdate({
-        _id: id,
-    }, {
-        refreshToken: refreshToken,
-    }, {
-        new: true,
-    });
 
     responseData = {
         accessToken,
@@ -38,7 +33,7 @@ module.exports = async (req, res, next) => {
         user,
     };
 
-    return send.success(res, 'you have logged in', responseData);
+    return send.success(res, 'new tokens generated', responseData);
 
 
     // process the request task
